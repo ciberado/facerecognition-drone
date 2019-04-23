@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="face-api.js"></script>
+  <script src="js/commons.js"></script>
+  <script src="js/drawing.js"></script>
+  <script src="js/faceDetectionControls.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+</head>
+<body>
+  <div class="center-content page-container">
+
+    <div class="progress" id="loader">
+      <div class="indeterminate"></div>
+    </div>
+    <div style="position: relative" class="margin">
+      <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted></video>
+      <canvas id="overlay" />
+    </div>
+    <img crossorigin="anonymous" class="target" label="Javi" src="https://pbs.twimg.com/profile_images/1022800709178327041/v-JxJI_7_400x400.jpg">
+    <img crossorigin="anonymous" class="target" label="Diana" src="photos/drone_diana-1.jpg">
+    <img crossorigin="anonymous" class="target" label="Diana" src="photos/drone_diana-2.jpg">
+    <img crossorigin="anonymous" class="target" label="Robert" src="photos/drone_robert-1.jpg">
+    <img crossorigin="anonymous" class="target" label="Fernando" src="photos/drone_fernando-1.jpg">
+    <img crossorigin="anonymous" class="target" label="Fernando" src="photos/drone_fernando-2.jpg">
+    <img crossorigin="anonymous" class="target" label="Javi" src="photos/drone_javi-1.jpg">
+    <img crossorigin="anonymous" class="target" label="Robert" src="photos/drone_robert-2.jpg">
+    <img crossorigin="anonymous" class="target" label="Robert" src="photos/drone_robert-3.jpg">
+  </div>
+</body>
+
+  <script>
+    let forwardTimes = []
+    let withBoxes = true
+    let faceMatcher = null;
+
+    function onChangeHideBoundingBoxes(e) {
+      withBoxes = !$(e.target).prop('checked')
+    }
+
+    function updateTimeStats(timeInMs) {
+      forwardTimes = [timeInMs].concat(forwardTimes).slice(0, 30)
+      const avgTimeInMs = forwardTimes.reduce((total, t) => total + t) / forwardTimes.length
+      $('#time').val(`${Math.round(avgTimeInMs)} ms`)
+      $('#fps').val(`${faceapi.round(1000 / avgTimeInMs)}`)
+    }
+
+    async function onPlay() {
+      const videoEl = $('#inputVideo').get(0)
+
+      if(videoEl.paused || videoEl.ended || !isFaceDetectionModelLoaded())
+        return setTimeout(() => onPlay())
+
+
+      const options = getFaceDetectorOptions()
+
+      const ts = Date.now()
+
+      const faceDescriptorsResults = await faceapi.detectAllFaces(videoEl, options)
+                                   .withFaceLandmarks()
+                                   .withFaceDescriptors();
+      //console.log(`Detected ${faceDescriptorsResults.length} faces.`);
+
+      updateTimeStats(Date.now() - ts)
+
+      if (faceDescriptorsResults.length > 0) {
+        drawLandmarks(videoEl, $('#overlay').get(0), faceDescriptorsResults, withBoxes)
+        faceMatchResults = faceDescriptorsResults
+                              .map(fd => faceMatcher.findBestMatch(fd.descriptor))
+                              .filter(fd => fd._label !== "unknown");
+        if (faceMatchResults.length > 0) {
+          console.log(`Detected example: ${JSON.stringify(faceMatchResults)}.`);
+          submitMatches(faceMatchResults);
+        }
+      }
+
+      setTimeout(() => onPlay(), 1000)
+    }
+
+    function submitMatches(faceMatchResults) {
+      $.post('/', {matches: JSON.parse(JSON.stringify(faceMatchResults))})
+       .fail(err => console.log(`Error submiting match: ${JSON.stringify(err)}.`));
+    }
+
+    async function run() {
+      
+      // load face detection and face landmark models
+      console.log('Loading detector model.');
+      await changeFaceDetector(SSD_MOBILENETV1)
+
+      console.log('Loading landmark model.');
+      await faceapi.loadFaceLandmarkModel('/')
+      console.log('Loading recognition model.');
+      await faceapi.loadFaceRecognitionModel('/');
+      changeInputSize(224)
+
+      const inputs = [].slice.call(document.getElementsByClassName('target'));
+      console.log(`${inputs.length} models detected.`);
+
+      let labeledFaceDescriptors = await Promise.all(
+        inputs.map(async img => {
+          let label = img.attributes['label'].value;
+          console.log(`Processing ${label}. Detecting face.`);
+          const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+          
+          if (!fullFaceDescription) {
+            console.error(`no faces detected for ${label}`);
+            return;
+          }
+          
+          let faceDescriptors = [fullFaceDescription.descriptor];
+          return new faceapi.LabeledFaceDescriptors(label, faceDescriptors)
+        })
+      );
+      labeledFaceDescriptors = labeledFaceDescriptors.filter(fd => fd);
+
+      console.log(`${labeledFaceDescriptors.length} descriptors generated.`);
+
+      console.log(`Creating FaceMatcher.`);
+      const maxDescriptorDistance = 0.6
+      faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ video: {} })
+      const videoEl = $('#inputVideo').get(0)
+      videoEl.srcObject = stream
+    }
+
+    function updatefaceDescriptorsResults() {}
+
+    $(document).ready(function() {
+      initFaceDetectionControls()
+      run()
+    })
+  </script>
+</body>
+</html>

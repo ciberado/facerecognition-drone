@@ -1,0 +1,16 @@
+FROM node:8-alpine
+
+WORKDIR /app/
+
+COPY app.js app.js
+COPY package.json ./
+COPY dist/ dist/
+COPY public/ public/
+COPY views/ views/
+COPY weights/ weights/
+
+RUN npm install --production 
+
+USER node
+
+CMD ["node", "app.js"]

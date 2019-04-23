@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- 
+       Based on the wonderful codepen https://codepen.io/drehimself/pen/KdXwxR by
+       Andre Madarang
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Penguin surveillance system</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.css">
+
+  <style>
+    @import url(https://fonts.googleapis.com/css?family=Lato:400,700);
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #c5ddeb;
+      font: 14px/20px "Lato", Arial, sans-serif;
+      padding: 40px 0;
+      color: white;
+    }
+
+    .container {
+      margin: 0 auto;
+      width: 1280px;
+      background: #444753;
+      border-radius: 5px;
+    }
+
+    .people-list {
+      float: left;
+    }
+
+    .chat {
+      width: 480px;
+      float: right;
+      background: #f2f5f8;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      color: #434651;
+    }
+    .chat .chat-header {
+      padding: 20px;
+      border-bottom: 2px solid white;
+    }
+    .chat .chat-header img {
+      float: left;
+    }
+    .chat .chat-header .chat-about {
+      float: left;
+      padding-left: 10px;
+      margin-top: 6px;
+    }
+    .chat .chat-header .chat-with {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .chat .chat-header .chat-num-messages {
+      color: #92959e;
+    }
+    .chat .chat-header .fa-star {
+      float: right;
+      color: #d8dadf;
+      font-size: 20px;
+      margin-top: 12px;
+    }
+    .chat .chat-history {
+      padding: 30px 30px 20px;
+      border-bottom: 2px solid white;
+      overflow-y: scroll;
+      height: 575px;
+    }
+    .chat .chat-history li {
+      list-style-type: none;
+    }
+    .chat .chat-history .message-data {
+      margin-bottom: 15px;
+    }
+    .chat .chat-history .message-data-time {
+      color: #a8aab1;
+      padding-left: 6px;
+    }
+    .chat .chat-history .message {
+      color: white;
+      padding: 18px 20px;
+      line-height: 26px;
+      font-size: 16px;
+      border-radius: 7px;
+      margin-bottom: 30px;
+      width: 90%;
+      position: relative;
+    }
+    .chat .chat-history .message:after {
+      bottom: 100%;
+      left: 7%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-bottom-color: #86bb71;
+      border-width: 10px;
+      margin-left: -10px;
+    }
+    .chat .chat-history .my-message {
+      background: #86bb71;
+    }
+    .chat .chat-history .other-message {
+      background: #94c2ed;
+    }
+    .chat .chat-history .other-message:after {
+      border-bottom-color: #94c2ed;
+      left: 93%;
+    }
+ 
+    .align-left {
+      text-align: left;
+    }
+
+    .align-right {
+      text-align: right;
+    }
+
+    .float-right {
+      float: right;
+    }
+
+    .clearfix:after {
+      visibility: hidden;
+      display: block;
+      font-size: 0;
+      content: " ";
+      clear: both;
+      height: 0;
+    }
+
+    #inputVideo {
+      position : absolute;
+      width: 640px; 
+      height: 480px; 
+      margin-top: 40px;
+      margin-left: 80px;
+    }
+
+    #overlay {
+      position : absolute;
+      width: 640px; 
+      height: 480px; 
+      margin-top: 40px;
+      margin-left: 80px;
+      opacity : 0.60;
+    }
+
+    .counter {
+      display: none;
+      background-color: #fa3e3e;
+      border-radius: 24px;
+      color: white;
+      padding: 1px 2px;
+      font-size: 60%;
+      margin: 4px;
+    }    
+
+    .target {
+      display : none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container clearfix">
+    <div class="people-list" id="people-list">
+    <div style="text-align: center">
+      <video xonloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted></video>    
+      <canvas id="overlay"/>
+    </div>
+      
+    </div>
+    
+    <div class="chat">
+      <div class="chat-header clearfix">
+        <img src="https://image.flaticon.com/icons/svg/141/141836.svg" alt="avatar" width="50"/>
+        
+        <div class="chat-about">
+          <div class="chat-with">Penguin surveillance system</div>
+          <div class="chat-num-messages">Early warning activated</div>
+        </div>
+        <i class="fa fa-star"></i>
+      </div> <!-- end chat-header -->
+      
+      <div class="chat-history">
+        <ul>
+          
+        </ul>
+        
+      </div> <!-- end chat-history -->
+     
+      
+    </div> <!-- end chat -->
+    
+  </div> <!-- end container -->
+
+<img crossorigin="anonymous" class="target" label="Javi" src="photos/javi_1.jpg">
+
+<script id="message-template" type="text/x-handlebars-template">
+  <li class="clearfix">
+    <div class="message-data align-right">
+      <span class="message-data-time" >{{time}}, Today</span> &nbsp; &nbsp;
+      <span class="message-data-name" >Incoming alert</span> <i class="fa fa-circle me"></i>
+    </div>
+    <div class="message other-message float-right">
+        {{messageOutput}}<span class="counter"></span>
+    </div>
+  </li>
+</script>
+
+<script id="message-response-template" type="text/x-handlebars-template">
+  <li>
+    <div class="message-data">
+      <span class="message-data-name"><i class="fa fa-circle online"></i> Info</span>
+      <span class="message-data-time">{{time}}, Today</span>
+    </div>
+    <div class="message my-message">
+      {{response}} <span class="counter"></span>
+    </div>
+  </li>
+</script>
+  
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.0/handlebars.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js"></script>
+<script>
+  class Chat {
+    constructor() {
+      this.$chatHistory = $('.chat-history');
+      this.$button = $('button');
+      this.$textarea = $('#message-to-send');
+      this.$chatHistoryList =  this.$chatHistory.find('ul');
+    }
+
+    increaseMessageCounter() {
+      let $counter = this.$chatHistory.find('.message').last().find('.counter');
+      let counterVal = $counter.is(':empty') ? 1 : parseInt($counter.text());
+      $counter.text(counterVal+1).css('display', 'inline-block');
+    }
+
+    addMessage(message) {
+      if (this.lastMessage === message) {
+        this.increaseMessageCounter();
+        return;
+      }
+      var template = Handlebars.compile( $("#message-template").html());
+        var context = { 
+          messageOutput: message,
+          time: this.getCurrentTime()
+        };
+        this.$chatHistoryList.append(template(context));
+        this.scrollToBottom();
+        this.lastMessage = message;
+    }
+
+    addResponse(message) {
+      var templateResponse = Handlebars.compile( $("#message-response-template").html());
+      var contextResponse = { 
+          response: message,
+          time: this.getCurrentTime()
+      };
+      this.$chatHistoryList.append(templateResponse(contextResponse));
+      this.scrollToBottom();
+    }
+
+    scrollToBottom() {
+       this.$chatHistory.scrollTop(this.$chatHistory[0].scrollHeight);
+    }
+
+    getCurrentTime() {
+      return new Date().toLocaleTimeString().
+              replace(/([\d]+:[\d]{2})(:[\d]{2})(.*)/, "$1$3");
+    }
+  }
+
+</script>
+
+  <script src="face-api.js"></script>
+  <script src="js/commons.js"></script>
+  <script src="js/drawing.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+
+  <script>
+    class VideoFaceMatcher {
+      constructor() {
+        this.minConfidence = 0.5;
+        this.faceMatcher = null;
+        this.videoEl = $('#inputVideo').get(0);
+        this.videoEl.onloadedmetadata = () => this.onPlay();
+      }
+
+      static get MATCH_FOUND() {
+        return 'MATCH_FOUND'
+      }
+
+      getCurrentFaceDetectionNet() {
+        return faceapi.nets.ssdMobilenetv1
+      }
+
+      isFaceDetectionModelLoaded() {
+        return !!this.getCurrentFaceDetectionNet().params
+      }      
+
+      async loadModel() {
+        $('#loader').show()
+        if (!this.isFaceDetectionModelLoaded()) {
+          await this.getCurrentFaceDetectionNet().load('/')
+        }
+        $('#loader').hide()
+      }
+
+      async onPlay() {
+        if(this.videoEl.paused || this.videoEl.ended || !this.isFaceDetectionModelLoaded()) {
+          return setTimeout(() => this.onPlay(), 1000);
+        }
+
+        const options = new faceapi.SsdMobilenetv1Options({ minConfidence : this.minConfidence });
+        const faceDescriptorsResults = 
+          await faceapi.detectAllFaces(this.videoEl, options)
+                       .withFaceLandmarks()
+                       .withFaceDescriptors();
+        //console.log(`Detected ${faceDescriptorsResults.length} faces.`);
+        if (faceDescriptorsResults.length > 0) {
+          const landmarkOptions = {
+            drawLines: false,
+            
+          };
+          drawLandmarks(this.videoEl, $('#overlay').get(0), faceDescriptorsResults, landmarkOptions)
+          let faceMatchResults = faceDescriptorsResults
+                              .map(fd => this.faceMatcher.findBestMatch(fd.descriptor))
+          let faceMatchUnknownResults = faceDescriptorsResults
+                              .filter(fd => fd._label === "unknown");
+          let faceMatchIdentifiedResults = faceDescriptorsResults
+                              .filter(fd => fd._label !== "unknown");
+
+          $(this).trigger(VideoFaceMatcher.MATCH_FOUND, {faceMatchUnknownResults, faceMatchIdentifiedResults});
+        }
+
+        setTimeout(() => this.onPlay(), 1000)
+      }
+
+      async start() {
+        
+        // load face detection and face landmark models
+        console.log('Loading detector model.');
+        await this.loadModel();
+
+        console.log('Loading landmark model.');
+        await faceapi.loadFaceLandmarkModel('/')
+        console.log('Loading recognition model.');
+        await faceapi.loadFaceRecognitionModel('/');
+        // changeInputSize(224)
+
+        const inputs = [].slice.call(document.getElementsByClassName('target'));
+        //const inputs = [faceapi.fetchImage('https://pbs.twimg.com/profile_images/1022800709178327041/v-JxJI_7_400x400.jpg')];
+        console.log(`${inputs.length} models detected.`);
+
+        let labeledFaceDescriptors = await Promise.all(
+          inputs.map(async img => {
+            let label = img.attributes['label'].value;
+            console.log(`Processing ${label}. Detecting face.`);
+            const fullFaceDescription = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            
+            if (!fullFaceDescription) {
+              console.error(`no faces detected for ${label}`);
+              return;
+            }
+            
+            let faceDescriptors = [fullFaceDescription.descriptor];
+            return new faceapi.LabeledFaceDescriptors(label, faceDescriptors)
+          })
+        );
+        labeledFaceDescriptors = labeledFaceDescriptors.filter(fd => fd);
+
+        console.log(`${labeledFaceDescriptors.length} descriptors generated.`);
+
+        console.log(`Creating FaceMatcher.`);
+        const maxDescriptorDistance = 0.6
+        this.faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, maxDescriptorDistance);
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+        this.videoEl.srcObject = stream;
+      }
+    }
+
+
+
+    $(document).ready(function() {
+      const chat = new Chat();
+      chat.addResponse('System initializing.');
+      const matcher = new VideoFaceMatcher();
+      
+      $(matcher).on(VideoFaceMatcher.MATCH_FOUND, (event, eventData) => {
+        $.post('/', {matches: JSON.parse(JSON.stringify(eventData.faceMatchIdentifiedResults))})
+         .fail(err => console.log(`Error submiting match: ${JSON.stringify(err)}.`));
+      });
+      $(matcher).on(VideoFaceMatcher.MATCH_FOUND, (event, eventData) => {
+        const fmr = eventData.faceMatchIdentifiedResults;
+        if (fmr.length === 0) {
+          if (eventData.faceMatchUnknownResults.length !== 0) {
+            chat.addMessage(`Unknown faces detected by the drone.`);
+          }
+          return;
+        }
+        const labels = fmr.map(fm => fm._label).reduce((partResult, current, idx) => {
+          if (!partResult) return current;
+          if (idx === fmr.length-1) return partResult + ' and ' + current;
+          return partResult + ', ' + current;
+        });
+        chat.addMessage(`${labels} detected by the drone.`);
+      });
+
+      matcher.start();
+    })
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+FROM node:8-alpine
+
+WORKDIR /app/
+
+COPY app.js app.js
+COPY package.json ./
+COPY dist/ dist/
+COPY public/ public/
+COPY views/ views/
+COPY weights/ weights/
+
+RUN npm install --production
+RUN npm install -g nodemon
+
+EXPOSE 9229
+
+USER node
+
+CMD ["nodemon", "--inspect=0.0.0.0:9229", "app.js"]
