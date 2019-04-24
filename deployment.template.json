@@ -66,8 +66,7 @@
               "image": "${MODULES.FaceAPIServerModule}",
               "createOptions": {
                 "ExposedPorts": {
-                  "3000/tcp": {}, 
-                  "9229/tcp": {}
+                  "3000/tcp": {}
                 },
                 "HostConfig": {
                   "PortBindings": {
@@ -75,11 +74,6 @@
                       {
                         "HostPort": "3000"
                       }
-                    ],
-                    "9229/tcp": [
-                      {
-                        "HostPort": "9229"
-                      } 
                     ]
                   }
                 }

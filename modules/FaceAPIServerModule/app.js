@@ -7,6 +7,8 @@ const Message = require('azure-iot-device').Message;
 const express = require('express');
 const path = require('path');
 
+let sirenIP = '192.168.1.216';
+let apiKey = '2C3D2ADF6F408AA7';
 let iotEdgeHubClient;
 
 function startIotEdgeHubClient() {
@@ -27,12 +29,29 @@ function startIotEdgeHubClient() {
           iotEdgeHubClient = client;
           client.on('inputMessage', onInputMessage);
           client.onMethod('SetVisualAlarmState', onDirectMethodSetVisualAlarmState);
-  
+
+          console.log(`Configuring module twin handlers.`);
+          client.getTwin((err, twin) => {
+            if (err) {
+              console.error(JSON.stringify(err));
+            } else {
+              twin.on('properties.desired', updateModuleConfiguration);
+              console.log(`Module twin handlers configured.`);
+            }
+          });   
+
+          updateModuleConfiguration();
           startExpressServer();
         }
       });
     }
   });  
+}
+
+function updateModuleConfiguration(delta) {
+  console.log(`Module twin modified properties: ${JSON.stringify(delta)}.`);
+  if (delta && delta.sirenIP) sirenIP = delta.sirenIP;
+  if (delta && delta.apiKey) apiKey = delta.apiKey;
 }
 
 function onInputMessage(inputName, msg) {
@@ -44,9 +63,8 @@ function onInputMessage(inputName, msg) {
 function onDirectMethodSetVisualAlarmState(request, response) {
   // Example payload: { "desiredAlarmState" : true }
   const desiredAlarmState = request.payload.desiredAlarmState ? 1 : 0;
-  const apiKey = 'B33BFB12B5B09B1C';
   const requestOptions = {
-    host: '192.168.43.216',
+    host: sirenIP,
     port: 80,
     path: `/api/relay/0?apikey=${apiKey}&value=${desiredAlarmState}`,
     method: 'GET',
@@ -64,7 +82,7 @@ function onDirectMethodSetVisualAlarmState(request, response) {
     });
   }).end();
 
-  response.send(200, 'SetVisualAlarmState invoked: ' + request.payload, function(err) {
+  response.send(200, 'SetVisualAlarmState invoked: ' + JSON.stringify(request.payload), function(err) {
     if (err) throw err;
     console.log(`Direct method invocation completed.`);
   });
@@ -77,7 +95,7 @@ function pipeMessage(client, inputName, messagePayload) {
     message.properties.add('MessageType', 'face-match');
     client.sendOutputEvent('output1', message, function(err, data) {
       if (err) throw err;
-      console.log(`Message sent (${JSON.stringify(data)}).`);
+      console.log(`Message sent (${JSON.stringify(data).substring(0,80)}...).`);
     });
   }
 }
@@ -103,4 +121,4 @@ function startExpressServer() {
   app.listen(3000, () => console.log('Listening on port 3000!'));  
 }
 
-startExpressServer();
+startIotEdgeHubClient();
