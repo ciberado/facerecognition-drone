@@ -16,4 +16,4 @@ If the IoT Edge Module method is invoked, it executes a HTTP query to change the
 
 The repository also includes several other examples, including a python example about how to create and visualize a [Histogram of Oriented gradients](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) and [Facial landmarks](https://www.pyimagesearch.com/2017/04/03/facial-landmarks-dlib-opencv-python/).
 
-![HOG demo](resources/images/jog_picture.jpg)
+![HOG demo](resources/images/hog_picture.jpg)
