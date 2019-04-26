@@ -17,3 +17,11 @@ If the IoT Edge Module method is invoked, it executes a HTTP query to change the
 The repository also includes several other examples, including a python example about how to create and visualize a [Histogram of Oriented Gradients](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) and [Facial landmarks](https://www.pyimagesearch.com/2017/04/03/facial-landmarks-dlib-opencv-python/).
 
 ![HOG demo](resources/images/hog_picture.jpg)
+
+## Slides
+
+The first version of this project was used in a demo during the [Global Azure Bootcamp 2019](https://catazurebootcamp.azurewebsites.net/) in Barcelona. The [slides are also available](https://slides.com/javiermoreno/face-recognition) for viewing, although they are not intended to provide useful guidance but to help presenting IoT Edge and face recognition technology.
+
+## Further assistance
+
+Detailed instructions to run this project will be provided at some point in the future but in the meanwhile feel free to contact Javi on [Twitter](http://twitter.com/ciberado) or [Linked-in](http://linkedin.com/in/javier-more/) if you want to run this code on your own.
