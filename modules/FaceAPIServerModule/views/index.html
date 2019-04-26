@@ -459,7 +459,7 @@
       const matcher = new VideoFaceMatcher();
       
       $(matcher).on(VideoFaceMatcher.MATCH_FOUND, (event, eventData) => {
-        $.post('/', {matches: JSON.parse(JSON.stringify(eventData.faceMatchIdentifiedResults))})
+        $.post('/', {matches: JSON.parse(JSON.stringify(eventData.faceMatchResults))})
          .fail(err => console.log(`Error submiting match: ${JSON.stringify(err)}.`));
       });
       $(matcher).on(VideoFaceMatcher.MATCH_FOUND, (event, eventData) => {

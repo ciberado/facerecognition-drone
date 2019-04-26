@@ -62,6 +62,7 @@ function onInputMessage(inputName, msg) {
 
 function onDirectMethodSetVisualAlarmState(request, response) {
   // Example payload: { "desiredAlarmState" : true }
+  console.log(`SetVisualAlarmState: ${JSON.stringify(request.payload)}.`);
   const desiredAlarmState = request.payload.desiredAlarmState ? 1 : 0;
   const requestOptions = {
     host: sirenIP,
@@ -72,6 +73,7 @@ function onDirectMethodSetVisualAlarmState(request, response) {
       'Content-Type': 'application/json'
     }    
   };
+  console.log(`Changing alarm state: ${requestOptions.host + requestOptions.path}.`)
   
   http.request(requestOptions, function(res) {
     console.log('STATUS: ' + res.statusCode);
@@ -83,7 +85,10 @@ function onDirectMethodSetVisualAlarmState(request, response) {
   }).end();
 
   response.send(200, 'SetVisualAlarmState invoked: ' + JSON.stringify(request.payload), function(err) {
-    if (err) throw err;
+    if (err) {
+      console.log(`Direct method invocation failed: ${JSON.stringify(err)}.`);
+      return;
+    }
     console.log(`Direct method invocation completed.`);
   });
 }
