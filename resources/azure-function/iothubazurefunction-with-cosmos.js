@@ -1,15 +1,35 @@
 const Client = require('azure-iothub').Client;
+const CosmosClient = require("@azure/cosmos").CosmosClient;
 
-const database = {
-    'Javi' : true,
-    'Fernando' : false,
-    'Robert' : false,
-    'Abril' : true
-};
-
-module.exports = function (context, ioTHubMessages) {
+module.exports = async function (context, ioTHubMessages) {
     context.log(`JavaScript eventhub trigger function called for message array: ${JSON.stringify(ioTHubMessages)}.`);
-    
+
+    const endpoint = process.env.endpoint;
+    const masterKey = process.env.primaryKey;
+    const databaseId = process.env.databaseId;
+    const containerId = process.env.containerId;
+
+    async function findSuspectStatus(suspect) {
+        context.log(`Find if ${suspect} is dangerous`);
+
+        const querySpec = {
+            query: "SELECT * FROM c where c.Name = @name",
+            parameters: [{
+                name: "@name", value: suspect
+            }]
+        };      
+        const cosmosClient = new CosmosClient({ 
+            endpoint: endpoint, 
+            auth: { masterKey: masterKey } 
+        });
+        const { result: results } = 
+            await cosmosClient.database(databaseId)
+                              .container(containerId)
+                              .items.query(querySpec).toArray();
+        console.log(`CosmoDB results: ${JSON.stringify(results)}.`);
+        return results.length === 0 ? null : results[0];
+    }
+
     function invokeSetVisualAlarmState(usualSuspects) {
         const deviceId = 'tocomocho';
         const moduleName = 'FaceAPIServerModule';
@@ -49,9 +69,10 @@ module.exports = function (context, ioTHubMessages) {
         dangerous : [],
         harmless : []
     };
-    ioTHubMessages.forEach(message => {
-        message.matches.forEach(match => {
-            const alarmDesiredState = database[match._label];
+    for (const message of ioTHubMessages) {
+        for (const match of message.matches) {
+            const suspectStatus = await findSuspectStatus(match._label);
+            const alarmDesiredState = suspectStatus.IsDangerous === true;
             if (alarmDesiredState === true) {
                 if (usualSuspects.dangerous.includes(match._label) === false) {
                     usualSuspects.dangerous.push(match._label);
@@ -61,8 +82,9 @@ module.exports = function (context, ioTHubMessages) {
                     usualSuspects.harmless.push(match._label);
                 }
             }
-        })
+        }
         context.log(`Processed message: ${JSON.stringify(message)}`);
-    });
+    }
+
     invokeSetVisualAlarmState(usualSuspects);
 };
