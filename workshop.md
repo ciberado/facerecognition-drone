@@ -70,9 +70,25 @@ docker logs edgeAgent
 exit
 ```
 
-*
+* Deploy the modules on the device and open the port 3000
 
 ```
-
+wget https://raw.githubusercontent.com/ciberado/facerecognition-drone/workshop/assets/deployment.json
 az iot edge set-modules --hub-name hubiotworkshop$NUMBER --device-id device$NUMBER  --content deployment.json
+
+az vm open-port --resource-group iotworkshop --name vmiot$NUMBER --port 3000  
+```
+
+* Monitor IotHub messages:
+
+```bash
+IOTHUB_CONN_STRING=$(az iot hub show-connection-string --name iotworkshop$NUMBER --query connectionString --output tsv)
+
+az iot hub monitor-events --login $IOTHUB_CONN_STRING -y
+```
+
+* This is the moment: open the web application deployed on the device and look for the bald guy in the room
+
+```bash
+open http://$IP:3000
 ```
