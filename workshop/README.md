@@ -106,7 +106,7 @@ exit
 * Now deploy the modules on the device (actually, tell the *iothub* to ask the device to update its status) and open the port 3000 to access the webapp created by the deployment
 
 ```
-wget https://raw.githubusercontent.com/ciberado/facerecognition-drone/workshop/assets/deployment.json
+wget https://raw.githubusercontent.com/capside/facerecognition-drone/workshop/workshop/deployment.json
 az iot edge set-modules --hub-name $IOT_HUB_NAME --device-id $DEVICE_NAME --content deployment.json
 
 az vm open-port --resource-group $RESOURCE_GROUP_NAME --name vm$DEVICE_NAME --port 3000  
