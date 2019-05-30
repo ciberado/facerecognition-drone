@@ -2,7 +2,7 @@
 
 ## Environment preparation
 
-* Login in the portal
+* Login into the portal
 
 * Open the cloudshell
 
@@ -47,7 +47,7 @@ echo $DEVICE_CONN_STRING
 * Create the vm that we are going to use as device
 
 ```bash
-wget https://raw.githubusercontent.com/ciberado/facerecognition-drone/workshop/assets/initvm.sh
+wget https://raw.githubusercontent.com/ciberado/facerecognition-drone/workshop/workshop/initvm.sh
 az vm create \
   --name vm$DEVICE_NAME \
   --resource-group $RESOURCE_GROUP_NAME \
