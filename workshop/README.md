@@ -23,6 +23,7 @@ az group create --name $RESOURCE_GROUP_NAME --location westeurope
 ```bash
 az extension add --name azure-cli-iot-ext
 az iot hub create --resource-group $RESOURCE_GROUP_NAME --name $IOT_HUB_NAME --sku S1
+az iot hub list --query "[].name"
 ```
 
 * Register a new shinny device (actually, right now, it's just a registered configuration in the *iot hub*)
@@ -121,4 +122,21 @@ az iot hub monitor-events --login $IOTHUB_CONN_STRING -y
 
 ```bash
 open http://$IP:3000
+```
+
+* What about checking the *desired state* of your device? 
+
+```bash
+az iot hub module-twin show --device-id $DEVICE_NAME --module-id FaceAPIServerModule --login "$IOTHUB_CONN_STRING" --resource-group $RESOURCE_GROUP_NAME
+```
+
+* And of course you can update that state easily (be careful with those quotes if you are using windows, use the commented version of the command):
+
+```bash
+az iot hub module-twin update --device-id $DEVICE_NAME --module-id FaceAPIServerModule --login "$IOTHUB_CONN_STRING" --resource-group $RESOURCE_GROUP_NAME --set properties.desired='{"apiKey":"12345", "sirenIP": "0.0.0.0"}'
+
+# Windows version:
+# az iot hub module-twin update --device-id pepsicola --module-id FaceAPIServerModule --login "HostName=ciberadoiothubdemo.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=WrRmz16n3Cqmg2UPx+ALhCE50ys7ZOFUwW0f7WKoicg=" --resource-group iotworkshop --set properties.desired="{\"apiKey\":\"12345\", \"sirenIP\": \"0.0.0.0\"}"
+
+az iot hub module-twin show --device-id $DEVICE_NAME --module-id FaceAPIServerModule --login "$IOTHUB_CONN_STRING" --resource-group $RESOURCE_GROUP_NAME
 ```
