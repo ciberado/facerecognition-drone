@@ -73,7 +73,7 @@ echo $IP
 ssh iot@$IP
 ```
 
-* Check if the tools are ready (installation takes some time, if you need `sudo` to run `docker ps` just logout and login again)
+* Check if the tools are ready (installation takes some time, if you need `sudo` to run `docker ps`, execute `sudo usermod -aG docker $(whoami)` and then logout and login again)
 
 ```
 cat /var/log/cloud-init.log
