@@ -125,7 +125,7 @@ echo $IP
 ```bash
 IOTHUB_CONN_STRING=$(az iot hub show-connection-string --name $IOT_HUB_NAME --query connectionString --output tsv)
 
-echo $IP
+echo $IOTHUB_CONN_STRING
 
 az iot hub monitor-events --login $IOTHUB_CONN_STRING -y
 ```
