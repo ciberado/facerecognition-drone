@@ -144,10 +144,10 @@ echo $IOTHUB_CONN_STRING
 az iot hub monitor-events --login $IOTHUB_CONN_STRING -y
 ```
 
-* This is the moment: open the web application deployed on the device and look for the bald guy in the room
+* This is the moment: open the web application deployed on the device and look for the bald guy in the room. **BEWARE: you will need to accept the self-signed certificate in your browser**. This is due a new security restriction implemented by Firefox and Chrome requiring a safe connection to use media sources
 
 ```bash
-open http://$IP:3000
+open https://$IP:3000
 ```
 
 ## Module configuration update with twins
