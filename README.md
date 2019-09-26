@@ -2,6 +2,10 @@
 
 This repo contains an [IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/) solution developed using [VSCode IoT extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) (highly recommended!).
 
+## Workshop
+
+You will find a step-by-step tutorial about how to implement most of the components needed to deploy a highly scalable IoT solution inside the [workshop](workshop/) folder.
+
 ## Architecture
 
 ![Architecture diagram](resources/images/architecture.jpg)
