@@ -58,6 +58,22 @@ echo $DEVICE_CONN_STRING
 
 * **Take note of the connection string for later use**. No, REALLY, TAKE NOTE.
 
+* Write the init script to a file:
+
+```bash
+cat << EOF > initvm.sh
+#!/bin/sh
+
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+curl -sSL https://get.docker.com | sh
+sudo apt install python-pip -y
+sudo pip install azure-iot-edge-runtime-ctl
+sudo apt-get remove unscd -y
+sudo usermod -aG docker iot
+EOF
+```
+
 * Create the vm that we are going to use as device
 
 ```bash
